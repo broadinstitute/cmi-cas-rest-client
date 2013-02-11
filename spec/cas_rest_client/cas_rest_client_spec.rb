@@ -66,7 +66,7 @@ describe CasRestClient do
         context "and the POST doesn't return a cookie" do
           let(:cookie) { nil }
           it "raises the RestClient::NotFound" do
-            RestClient.should_receive(:send).with("post", "tst.app?ticket=ticket1", {}).and_raise RestClient::Found.new(ticket_response, 302)
+            RestClient.should_receive(:send).with("post", "tst.app?ticket=ticket1", {}, {}).and_raise RestClient::Found.new(ticket_response, 302)
             lambda { crc.post("tst.app") }.should raise_error(RestClient::Found)
           end
         end
@@ -74,8 +74,8 @@ describe CasRestClient do
           it "should retry the POST using the cookie" do
             cookie_response = mock(:"cookie-response", :cookies => cookie)
   
-            RestClient.should_receive(:send).with("post", "tst.app?ticket=ticket1", {}).and_raise RestClient::Found.new(ticket_response, 302)
-            RestClient.should_receive(:send).with("post", "tst.app", :cookies => cookie).and_return(cookie_response)
+            RestClient.should_receive(:send).with("post", "tst.app?ticket=ticket1", {}, {}).and_raise RestClient::Found.new(ticket_response, 302)
+            RestClient.should_receive(:send).with("post", "tst.app", {}, :cookies => cookie).and_return(cookie_response)
             crc.post("tst.app").should == cookie_response
           end
         end
@@ -106,9 +106,19 @@ describe CasRestClient do
           crc.delete("tst.app").should == "resource"
         end
     
-        it "should post a resource with cookies" do
-          RestClient.should_receive(:send).with("post", "tst.app", {:opt => :opts}, :cookies => cookie).and_return("resource")
-          crc.post("tst.app", {:opt => :opts}).should == "resource"
+        context "post" do
+          context "with non-empty body" do
+            it "should send with cookies" do
+              RestClient.should_receive(:send).with("post", "tst.app", {:opt => :opts}, :cookies => cookie).and_return("resource")
+              crc.post("tst.app", {:opt => :opts}).should == "resource"
+            end
+          end
+          context "with non-empty body" do
+            it "should send with cookies" do
+              RestClient.should_receive(:send).with("post", "tst.app", {}, :cookies => cookie).and_return("resource")
+              crc.post("tst.app").should == "resource"
+            end
+          end
         end
     
         it "should put a resource with cookies" do
