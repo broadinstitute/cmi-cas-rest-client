@@ -84,7 +84,7 @@ class CasRestClient
         RestClient.send(method, uri, options)
       end
     rescue RestClient::Found => e
-      if method == 'post' && ( @cookies = e.response.cookies )
+      if ( @cookies = e.response.cookies )
         execute_with_cookie method, original_uri, params, options
       else
         raise
