@@ -93,7 +93,7 @@ class CasRestClient
   end
   
   def send_body?(method)
-    %w(post patch put).member?(method.downcase)
+    %w(post patch put delete).member?(method.downcase)
   end
 
   def create_ticket(uri, params)
